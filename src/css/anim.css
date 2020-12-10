@@ -1,0 +1,29 @@
+.loading {
+    animation: anim-loading 1s infinite;
+}
+
+.loaded {
+    animation: anim-loaded 1s;
+}
+
+.notLoaded {
+    animation: anim-not-loaded 1s;
+}
+
+@keyframes anim-loading {
+    0% { border-color: #262626; }
+    50% { border-color: #80a0f2; }
+    100% { border-color: #262626; }
+}
+
+@keyframes anim-loaded {
+    0% { border-color: #262626; }
+    50% { border-color: #a0f280; }
+    100% { border-color: #262626; }
+}
+
+@keyframes anim-not-loaded {
+    0% { border-color: #262626; }
+    50% { border-color: #f2a080; }
+    100% { border-color: #262626; }
+}

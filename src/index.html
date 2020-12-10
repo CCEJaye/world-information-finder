@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+    <head>
+        <title>World Information Finder</title>
+        <meta charset="UTF-8">
+        <meta name="author" content="Charles Jaye">
+        <meta name="description" content="Map-based application providing global and country-specific information from a collection of API sources">
+        <meta name="keywords" content="API, map, world, global, information, statistics, reports, data, leaflet, interactive, weather, news, politics, climate, currency, exchange, wind, precipitation, rain, snow, sunrise, sunset, temperature, disasters, history, corona, COVID-19, virus, epidemic, borders, country, population, language, coordinates, region, time, timezone, units, area, air, wiki, wikipedia, wikimedia, wikidata, yahoo, terrain, clouds, app, coronatracker, relief web, arcgis, ambee, opencage, restcountries">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="favicon.png">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap">
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <link rel="stylesheet" type="text/css" href="lib/leaflet/leaflet.css"/>
+    </head>
+
+    <body id="body">
+        <script defer type="application/javascript" src="lib/jquery/jquery-3.5.1.min.js"></script>
+        <script defer type="application/javascript" src="lib/leaflet/leaflet.js"></script>
+        <script defer type="application/javascript" src="js/index.js"></script>
+
+        <div id="preloader"></div>
+
+        <main id="main">
+            <div id="map"></div>
+        </main>
+
+        <header id="banner" class="pad drop">
+            <img class="icon floatL" src="favicon.png" alt="Icon">
+            <h1 class="tHeading6 indent pad">World Information Finder</h1>
+        </header>
+        
+        <section id="header">
+            <img id="flag" class="loadBorder drop" alt="Flag">
+            <h2 id="country" class="tTitle drop">Country</h2>
+        </section>
+
+        <div id="mainPanel" class="loadBorder">
+            <article id="covidPanel" class="mainPanel">
+                <header>
+                    <h3 class="tHeading1">COVID-19 Statistics</h3>
+                </header>
+                <p>Finding information...</p>
+            </article>
+
+            <article id="wikiPanel" class="mainPanel">
+                <header>
+                    <h3 class="tHeading1">Wikipedia Links</h3>
+                </header>
+                <p>Finding information...</p>
+            </article>
+
+            <article id="disasterPanel" class="mainPanel">
+                <header>
+                    <h3 class="tHeading1">British Disasters</h3>
+                </header>
+                <p>Finding information...</p>
+            </article>
+
+            <article id="weatherPanel" class="mainPanel">
+                <header>
+                    <h3 class="tHeading1">Local Weather</h3>
+                </header>
+                <p>Finding information...</p>
+            </article>
+            
+            <article id="exchangeratePanel" class="mainPanel">
+                <header>
+                    <h3 class="tHeading1">Exchange Rates</h3>
+                </header>
+                <p>Finding information...</p>
+            </article>
+            
+            <article id="newsPanel" class="mainPanel">
+                <header>
+                    <h3 class="tHeading1">News Articles</h3>
+                </header>
+                <p>Finding information...</p>
+            </article>
+        </div>
+
+        <div id="subPanel">
+            <aside id="cardRegions" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Regions</h3>
+                <p>Finding information...</p>
+            </aside>
+            <aside id="cardIsoCodes" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Codes</h3>
+                <p>Finding information...</p>
+            </aside>
+            <aside id="cardCoords" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Coordinates</h3>
+                <p>Finding information...</p>
+            </aside>
+            <aside id="cardNames" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Names</h3>
+                <p>Finding information...</p>
+            </aside>
+            <aside id="cardLanguages" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Languages</h3>
+                <p>Finding information...</p>
+            </aside>
+            <aside id="cardTime" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Time</h3>
+                <p>Finding information...</p>
+            </aside>
+            <aside id="cardCurrency" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Currency</h3>
+                <p>Finding information...</p>
+            </aside>
+            <aside id="cardUnits" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Units</h3>
+                <p>Finding information...</p>
+            </aside>
+            <aside id="cardOther" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Other</h3>
+                <p>Finding information...</p>
+            </aside>
+            <aside id="cardPopulation" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Population</h3>
+                <p>Finding information...</p>
+            </aside>
+            <aside id="cardArea" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Land Area</h3>
+                <p>Finding information...</p>
+            </aside>
+            <aside id="cardAir" class="subPanel loadBorder drop">
+                <h3 class="tHeading6">Air Quality</h3>
+                <p>Finding information...</p>
+            </aside>
+        </div>
+
+        <footer id="footer" role="toolbar">
+            <button id="zoomInButton" class="iconBtn drop" tabindex="0">
+                <span id="zoomInLabel" class="tLabel tC" role="tooltip">Zoom in</span>
+                <svg aria-describedby="zoomInLabel" role="img">
+                    <use xlink:href="img/icons.svg#zoomIn"></use>
+                </svg>
+            </button>
+            <button id="zoomOutButton" class="iconBtn drop" tabindex="0">
+                <span id="zoomOutLabel" class="tLabel tC" role="tooltip">Zoom out</span>
+                <svg aria-describedby="zoomOutLabel" role="img">
+                    <use xlink:href="img/icons.svg#zoomOut"></use>
+                </svg>
+            </button>
+            <button id="globeButton" class="iconBtn drop" tabindex="0">
+                <span id="fitWorldLabel" class="tLabel tC" role="tooltip">Fit world</span>
+                <svg aria-describedby="fitWorldLabel" role="img">
+                    <use xlink:href="img/icons.svg#globe"></use>
+                </svg>
+            </button>
+            <button id="fitButton" class="iconBtn drop" tabindex="0">
+                <span id="fitCountryLabel" class="tLabel tC" role="tooltip">Fit country</span>
+                <svg aria-describedby="fitCountryLabel" role="img">
+                    <use xlink:href="img/icons.svg#fit"></use>
+                </svg>
+            </button>
+            <button id="markerButton" class="iconBtn drop" tabindex="0">
+                <span id="mapMarkersLabel" class="tLabel tC" role="tooltip">Map markers</span>
+                <svg aria-describedby="mapMarkersLabel" role="img">
+                    <use xlink:href="img/icons.svg#marker"></use>
+                </svg>
+            </button>
+            <button id="layersButton" class="iconBtn drop" tabindex="0">
+                <span id="selectLayersLabel" class="tLabel tC" role="tooltip">Select layers</span>
+                <svg aria-describedby="selectLayersLabel" role="img">
+                    <use xlink:href="img/icons.svg#layers"></use>
+                </svg>
+            </button>
+            <button id="subButton" class="iconBtn drop" tabindex="0">
+                <span id="subContentLabel" class="tLabel tC" role="tooltip">Sub content</span>
+                <svg aria-describedby="subContentLabel" role="img">
+                    <use xlink:href="img/icons.svg#subContent"></use>
+                </svg>
+            </button>
+            <button id="mainButton" class="iconBtn drop" tabindex="0">
+                <span id="mainContentLabel" class="tLabel tC" role="tooltip">Main content</span>
+                <svg aria-describedby="mainContentLabel" role="img">
+                    <use xlink:href="img/icons.svg#mainContent"></use>
+                </svg>
+            </button>
+        </footer>
+
+        <div id="menus">
+            <nav id="subMenu" class="menu" role="menu">
+                <h2 class="semantic">Sub Content Menu</h2>
+                <h3 class="menuHeader tHeading5">Sub Content</h3>
+                <ul>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardRegions" role="menuitemcheckbox" tabindex="0">Regions</button></li>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardIsoCodes" role="menuitemcheckbox" tabindex="0">ISO Codes</button></li>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardCoords" role="menuitemcheckbox" tabindex="0">Coordinates</button></li>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardNames" role="menuitemcheckbox" tabindex="0">Names</button></li>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardLanguages" role="menuitemcheckbox" tabindex="0">Languages</button></li>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardTime" role="menuitemcheckbox" tabindex="0">Time</button></li>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardCurrency" role="menuitemcheckbox" tabindex="0">Currency</button></li>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardUnits" role="menuitemcheckbox" tabindex="0">Units</button></li>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardOther" role="menuitemcheckbox" tabindex="0">Other</button></li>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardPopulation" role="menuitemcheckbox" tabindex="0">Population</button></li>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardArea" role="menuitemcheckbox" tabindex="0">Land Area</button></li>
+                    <li><button class="btn tLabel" data-group="countryInfo" data-type="multi" data-ref="#cardAir" role="menuitemcheckbox" tabindex="0">Air Quality</button></li>
+                </ul>
+            </nav>
+            <nav id="mainMenu" class="menu" role="menu">
+                <h2 class="semantic">Main Content Menu</h2>
+                <h3 class="menuHeader tHeading5">Main Content</h3>
+                <ul>
+                    <li><button class="btn tLabel" data-group="mainContent" data-type="single" data-ref="#covidPanel" role="menuitemradio" tabindex="0">COVID-19</button></li>
+                    <li><button class="btn selected tLabel" data-group="mainContent" data-type="single" data-ref="#weatherPanel" role="menuitemradio" tabindex="0">Weather</button></li>
+                    <li><button class="btn tLabel" data-group="mainContent" data-type="single" data-ref="#disasterPanel" role="menuitemradio" tabindex="0">Disasters</button></li>
+                    <li><button class="btn tLabel" data-group="mainContent" data-type="single" data-ref="#wikiPanel" role="menuitemradio" tabindex="0">Wikipedia</button></li>
+                    <li><button class="btn tLabel" data-group="mainContent" data-type="single" data-ref="#exchangeratePanel" role="menuitemradio" tabindex="0">Exchange Rates</button></li>
+                    <li><button class="btn tLabel" data-group="mainContent" data-type="single" data-ref="#newsPanel" role="menuitemradio" tabindex="0">News</button></li>
+                </ul>
+            </nav>
+            <nav id="layerMenu" class="menu" role="menu">
+                <h2 class="semantic">Layer Menu</h2>
+                <h3 class="menuHeader tHeading5">Background</h3>
+                <ul>
+                    <li><button class="btn selected tLabel" data-group="base" data-type="single" data-ref="dark" role="menuitemradio" tabindex="0">Dark</button></li>
+                    <li><button class="btn tLabel" data-group="base" data-type="single" data-ref="terrain-background" role="menuitemradio" tabindex="0">Terrain</button></li>
+                </ul>
+                <hr>
+                <h3 class="menuHeader tHeading5">Info</h3>
+                <ul>
+                    <li><button class="btn tLabel" data-group="label" data-type="multi" data-ref="terrain-lines" role="menuitemcheckbox" tabindex="0">Map Lines</button></li>
+                    <li><button class="btn tLabel" data-group="label" data-type="multi" data-ref="terrain-labels" role="menuitemcheckbox" tabindex="0">Map Labels</button></li>
+                </ul>
+                <hr>
+                <h3 class="menuHeader tHeading5">Overlay</h3>
+                <ul>
+                    <li><button class="btn tLabel" data-group="overlay" data-type="oneOrNone" data-ref="hiking" role="menuitem" tabindex="0">Hiking Routes</button></li>
+                    <li><button class="btn tLabel" data-group="overlay" data-type="oneOrNone" data-ref="cycling" role="menuitem" tabindex="0">Cycling Routes</button></li>
+                    <li><button class="btn tLabel" data-group="overlay" data-type="oneOrNone" data-ref="clouds_new" role="menuitem" tabindex="0">Clouds</button></li>
+                    <li><button class="btn tLabel" data-group="overlay" data-type="oneOrNone" data-ref="precipitation_new" role="menuitem" tabindex="0">Precipitation</button></li>
+                    <li><button class="btn tLabel" data-group="overlay" data-type="oneOrNone" data-ref="pressure_new" role="menuitem" tabindex="0">Pressure</button></li>
+                    <li><button class="btn tLabel" data-group="overlay" data-type="oneOrNone" data-ref="wind_new" role="menuitem" tabindex="0">Wind</button></li>
+                    <li><button class="btn tLabel" data-group="overlay" data-type="oneOrNone" data-ref="temp_new" role="menuitem" tabindex="0">Temperature</button></li>
+                </ul>
+            </nav>
+            <nav id="markerMenu" class="menu" role="menu">
+                <h2 class="semantic">Marker Menu</h2>
+                <h3 class="menuHeader tHeading5">Selected Country</h3>
+                <ul>
+                    <li><button class="btn selected tLabel" data-group="selectedCountry" data-type="multi" data-ref="selectedBorder" role="menuitemcheckbox" tabindex="0">Border</button></li>
+                    <li><button class="btn tLabel" data-group="selectedCountry" data-type="multi" data-ref="selectedShape" role="menuitemcheckbox" tabindex="0">Shape</button></li>
+                </ul>
+                <hr>
+                <h3 class="menuHeader tHeading5">Saved Countries</h3>
+                <ul>
+                    <li><button class="btn selected tLabel" data-group="savedCountries" data-type="multi" data-ref="savedBorder" role="menuitemcheckbox" tabindex="0">Borders</button></li>
+                    <li><button class="btn tLabel" data-group="savedCountries" data-type="multi" data-ref="savedShape" role="menuitemcheckbox" tabindex="0">Shapes</button></li>
+                </ul>
+                <hr>
+                <h3 class="menuHeader tHeading5">Global</h3>
+                <ul>
+                    <li><button class="btn tLabel" data-group="global" data-type="oneOrNone" data-ref="reliefweb" role="menuitemradio" tabindex="0">Ongoing Disasters</button></li>
+                    <li><button class="btn tLabel" data-group="global" data-type="oneOrNone" data-ref="corona" role="menuitemradio" tabindex="0">COVID-19</button></li>
+                </ul>
+            </nav>
+        </div>
+
+    </body>
+</html>

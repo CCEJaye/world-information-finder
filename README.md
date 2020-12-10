@@ -1,0 +1,1 @@
+npm install or npm run build will build to /dist

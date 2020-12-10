@@ -1,0 +1,11 @@
+{
+    "typeAcquisition": {
+        "include": [
+            "jquery",
+            "leaflet",
+            "data",
+            "sections",
+            "util"
+        ]
+    }
+}

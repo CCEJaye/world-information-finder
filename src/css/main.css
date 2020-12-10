@@ -1,0 +1,232 @@
+:root {
+    --primary: #eee;
+    --primaryDark: #ccc;
+    --secondary: #111;
+    --secondaryLight: #333;
+    --secondaryDark: #222;
+
+    --positive: #5e5;
+    --neutral: #ee5;
+    --negative: #e55;
+
+    --focus: #444;
+    --hover: #77e;
+    --active: #7e7;
+    --selected: #666;
+    --focus-selected: #555;
+
+    --shadow: #000000f0;
+
+    --slow: 400ms;
+    --medium: 200ms;
+    --fast: 50ms;
+}
+
+/* Device */
+#body {
+    height: 100%;
+    display: grid;
+    grid-template-areas: 
+        "banner banner"
+        "main header"
+        "main side"
+        "main footer";
+    grid-template-columns: min(40%, 52rem) max(60%, calc(100vw - 52rem));
+    grid-template-rows: min-content min-content minmax(0, 1fr) min-content;
+}
+
+#mainPanel {
+    max-width: 52rem;
+}
+
+@media only screen and (max-aspect-ratio: 7 / 12) {
+    #body {
+        grid-template-areas: 
+            "banner"
+            "header"
+            "side"
+            "main"
+            "footer";
+        grid-template-columns: 100%;
+        grid-template-rows: min-content min-content minmax(0, 1fr) 35% min-content;
+    }
+
+    #mainPanel {
+        max-width: unset; 
+    }
+
+    #menus {
+        grid-area: main;
+    }
+}
+
+html {
+    font-size: 50%;
+    overflow: hidden;
+    background-color: var(--secondary);
+}
+
+@media only screen and (min-width: 600px) and (min-height: 600px) {
+    html {
+        font-size: 62.5%;
+    }
+}
+
+@media only screen and (min-width: 900px) and (min-height: 900px) {
+    html {
+        font-size: 75%;
+    }
+}
+
+/* Main Elements */
+#main {
+    grid-area: 1 / 1 / -1 / -1;
+}
+
+    #map {
+        height: 100%;
+        width: 100%;
+        background: var(--secondaryLight);
+    }
+
+#banner {
+    grid-area: banner;
+    background: var(--secondary);
+}
+
+    #banner img {
+        margin-right: 1rem;
+    }
+
+#header {
+    grid-area: header;
+    display: grid;
+        grid-template-columns: 1fr 5fr;
+        justify-items: start;
+        align-items: center;
+        gap: 2rem;
+    pointer-events: none;
+    margin: 2rem;
+    margin-top: 3rem;
+}
+
+    #flag {
+        max-width: 100%;
+        min-width: 10rem;
+        max-height: 8rem;
+        align-self: start;
+        border-radius: 0.5rem;
+        border-width: 0.2rem;
+        background: var(--secondary);
+        justify-self: center;
+    }
+
+#mainPanel {
+    position: relative;
+    grid-area: main;
+    background: var(--secondary);
+    margin: 2rem;
+    padding: 1.5rem;
+    padding-right: 0.5rem;
+}
+
+    .mainPanel {
+        max-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        padding-right: 1rem;
+    }
+
+#subPanel {
+    grid-area: side;
+    display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-content: flex-start;
+        align-items: flex-start;
+    margin: 2rem;
+    pointer-events: none;
+    z-index: 50;
+}
+
+    .subPanel {
+        position: relative;
+        margin-right: 1rem;
+        margin-bottom: 1rem;
+        background: var(--secondary);
+        padding: 1rem;
+    }
+
+#menus {
+    grid-area: side;
+    position: relative;
+    margin: 2rem;
+    pointer-events: none;
+}
+
+#footer {
+    grid-area: footer;
+    display: grid;
+        grid-auto-flow: column;
+        justify-items: center;
+        align-items: center;
+    position: relative;
+    margin: 4rem 2rem;
+}
+
+.gWeatherC { grid-template-columns: 1fr minmax(0, 3fr) 1fr 1fr 1fr 1fr; }
+.gExchangeC { grid-template-columns: 1fr 2fr minmax(0, 3fr); }
+
+a, a:link {
+    color: var(--primary);
+}
+
+a:focus {
+    text-decoration: underline;
+}
+
+a:hover, a:focus {
+    color: var(--hover);
+}
+
+a:active {
+    color: var(--active);
+}
+
+/* Preloader */
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    overflow: hidden;
+    background: var(--secondary);
+}
+
+#preloader:before {
+    content: "";
+    position: fixed;
+    top: calc(50% - 3rem);
+    left: calc(50% - 3rem);
+    border: 0.5rem solid var(--primary);
+    border-top: 0.5rem solid var(--secondary);
+    border-radius: 50%;
+    width: 6rem;
+    height: 6rem;
+    -webkit-animation: animate-preloader 1s linear infinite;
+    animation: animate-preloader 1s linear infinite;
+}
+
+@keyframes animate-preloader {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
