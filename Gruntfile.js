@@ -1,11 +1,5 @@
 module.exports = function (grunt) {
     grunt.initConfig({
-        build: {
-            js: "",
-            css: "",
-            html: "",
-            json: ""
-        },
         concat: {
             css: {
                 src: ["src/css/reset.css", "src/css/components.css", "src/css/main.css", "src/css/type.css", "src/css/anim.css"],

@@ -1,11 +1,16 @@
 {
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es6"
+    },
     "typeAcquisition": {
         "include": [
             "jquery",
             "leaflet",
             "data",
             "sections",
-            "util"
+            "util",
+            "index"
         ]
     }
 }

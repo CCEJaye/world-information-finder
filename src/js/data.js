@@ -126,7 +126,7 @@
                 Object.assign(this, cachedObject);
             } 
             if (!this.data.countries || $.isEmptyObject(this.data.countries)) {
-                const result = await Util.ajaxGet("/data/countries.json");
+                const result = await Util.ajaxGet("data/countries.json");
                 if (!result.error) {
                     this.data.countries = result.data;
                 }
@@ -167,7 +167,7 @@
             let events = [];
             let ajax;
             try {
-                ajax = await Util.ajaxPost("/php/request.php", {
+                ajax = await Util.ajaxPost("php/request.php", {
                     endpoints: endpoints, params: params});
             } catch(e) {
                 console.log(e);
@@ -372,7 +372,7 @@
             let events = [];
             let ajax;
             try {
-                ajax = await Util.ajaxPost("/php/request.php", {
+                ajax = await Util.ajaxPost("php/request.php", {
                     endpoints: endpoints, params: this.params});
             } catch(e) {
                 console.log(e);
@@ -504,15 +504,17 @@
                     data.country = r.components.country;
                     data.cityLat = r.geometry.lat;
                     data.cityLng = r.geometry.lng;
-                    data.currencyDecimal = r.annotations.currency.decimal_mark;
-                    data.currencySymbol = r.annotations.currency.html_entity || r.annotations.currency.symbol;
-                    data.currencyIso = r.annotations.currency.iso_code;
-                    data.currencyUnit = r.annotations.currency.name;
-                    data.currencySubunit = r.annotations.currency.subunit;
-                    data.currencyRatio = r.annotations.currency.subunit_to_unit;
-                    data.currencySeparator = r.annotations.currency.thousands_separator;
-                    data.currencySymbolFirst = r.annotations.currency.symbol_first;
-                    data.currencyFormat = r.annotations.currency.format;
+                    if (r.annotations.currency) {
+                        data.currencyDecimal = r.annotations.currency.decimal_mark;
+                        data.currencySymbol = r.annotations.currency.html_entity || r.annotations.currency.symbol;
+                        data.currencyIso = r.annotations.currency.iso_code;
+                        data.currencyUnit = r.annotations.currency.name;
+                        data.currencySubunit = r.annotations.currency.subunit;
+                        data.currencyRatio = r.annotations.currency.subunit_to_unit;
+                        data.currencySeparator = r.annotations.currency.thousands_separator;
+                        data.currencySymbolFirst = r.annotations.currency.symbol_first;
+                        data.currencyFormat = r.annotations.currency.format;
+                    }
                     return data;
 
                 case "reliefwebdisasters":
@@ -668,14 +670,18 @@
         __reassignParams() {
             const d = this.data;
             this.params.isoA2 = this.id;
-            this.params.isoA3 = d.restcountries.isoA3;
+            if (d.restcountries) {
+                this.params.isoA3 = d.restcountries.isoA3;
+                this.params.city = d.restcountries.capital;
+            }
             const now = new Date();
             this.params.dateEnd = now.toISOString().substr(0, 10);
             now.setDate(now.getDate() - 10);
             this.params.dateStart = now.toISOString().substr(0, 10);
-            this.params.lat = d.opencageforward.cityLat;
-            this.params.lng = d.opencageforward.cityLng;
-            this.params.city = d.restcountries.capital;
+            if (d.opencageforward) {
+                this.params.lat = d.opencageforward.cityLat;
+                this.params.lng = d.opencageforward.cityLng;
+            }
             for (let i = 0; i < this.params; i++) {
                 this.params[i] = encodeURIComponent(this.params[i]);
             }
