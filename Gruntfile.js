@@ -74,7 +74,7 @@ module.exports = function (grunt) {
             }
         },
         clean: {
-            dist: ["dist"]
+            dist: ["dist", "temp"]
         },
         watch: {
             options: {

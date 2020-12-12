@@ -669,19 +669,16 @@
 
         __reassignParams() {
             const d = this.data;
+            const global = dataArray["GLOBAL"].data.countries[this.id];
             this.params.isoA2 = this.id;
-            if (d.restcountries) {
-                this.params.isoA3 = d.restcountries.isoA3;
-                this.params.city = d.restcountries.capital;
-            }
+            this.params.isoA3 = d.restcountries ? d.restcountries.isoA3 : global.cca3;
+            this.params.city = d.restcountries ? d.restcountries.capital : global.capital;
             const now = new Date();
             this.params.dateEnd = now.toISOString().substr(0, 10);
             now.setDate(now.getDate() - 10);
             this.params.dateStart = now.toISOString().substr(0, 10);
-            if (d.opencageforward) {
-                this.params.lat = d.opencageforward.cityLat;
-                this.params.lng = d.opencageforward.cityLng;
-            }
+            this.params.lat = d.opencageforward ? d.opencageforward.cityLat : global.latlng[0];
+            this.params.lng = d.opencageforward ? d.opencageforward.cityLng : global.latlng[1];
             for (let i = 0; i < this.params; i++) {
                 this.params[i] = encodeURIComponent(this.params[i]);
             }
