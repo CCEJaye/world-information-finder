@@ -75,7 +75,7 @@
             return await global.requestData(
                 ["opencagereverse"],
                 async (data) => {
-                    countryCode = data.opencagereverse.lastIsoA2;
+                    countryCode = data.opencagereverse.lastIsoA2 || "";
                     if (countryCode) {
                         return await getCountryData(countryCode);
                     } else {
@@ -185,11 +185,8 @@
                     events.push(EVENT_ENDPOINT_RESPONSE_MISSING);
                     continue;
                 }
-                let harvest;
-                try {
-                    harvest = this.__harvestData(current, ajax.data[current]);
-                } catch(e) {
-                    console.log(e);
+                let harvest = this.__harvestData(current, ajax.data[current]);
+                if (!harvest) {
                     events.push(EVENT_HARVEST_INCOMPLETE);
                     continue;
                 }
@@ -219,39 +216,41 @@
                 case "coronatrackerglobal":
                     r = result;
                     const globalPopMod = (r.totalConfirmed / r.totalCasesPerMillionPop);
-                    data.confirmed = r.totalConfirmed.toLocaleString();
-                    data.active = r.totalActiveCases.toLocaleString();
-                    data.recoveries = r.totalRecovered.toLocaleString();
-                    data.deaths = r.totalDeaths.toLocaleString();
-                    data.confirmedRaw = r.totalConfirmed;
-                    data.activeRaw = r.totalActiveCases;
-                    data.recoveriesRaw = r.totalRecovered;
-                    data.deathsRaw = r.totalDeaths;
-                    data.confirmedMil = r.totalCasesPerMillionPop.toLocaleString();
-                    data.activeMil = Math.round(r.totalActiveCases / globalPopMod).toLocaleString();
-                    data.recoveriesMil = Math.round(r.totalRecovered / globalPopMod).toLocaleString();
-                    data.deathsMil = Math.round(r.totalDeaths / globalPopMod).toLocaleString();
-                    data.newCases = r.totalNewCases.toLocaleString();
-                    data.newDeaths = r.totalNewDeaths.toLocaleString();
+                    apply(data, "confirmed", () => r.totalConfirmed.toLocaleString());
+                    apply(data, "active", () => r.totalActiveCases.toLocaleString());
+                    apply(data, "recoveries", () => r.totalRecovered.toLocaleString());
+                    apply(data, "deaths", () => r.totalDeaths.toLocaleString());
+                    apply(data, "confirmedRaw", () => r.totalConfirmed);
+                    apply(data, "activeRaw", () => r.totalActiveCases);
+                    apply(data, "recoveriesRaw", () => r.totalRecovered);
+                    apply(data, "deathsRaw", () => r.totalDeaths);
+                    apply(data, "confirmedMil", () => r.totalCasesPerMillionPop.toLocaleString());
+                    apply(data, "activeMil", () => Math.round(r.totalActiveCases / globalPopMod).toLocaleString());
+                    apply(data, "recoveriesMil", () => Math.round(r.totalRecovered / globalPopMod).toLocaleString());
+                    apply(data, "deathsMil", () => Math.round(r.totalDeaths / globalPopMod).toLocaleString());
+                    apply(data, "newCases", () => r.totalNewCases.toLocaleString());
+                    apply(data, "newDeaths", () => r.totalNewDeaths.toLocaleString());
                     return data;
 
                 case "coronatrackertop":
                     r = result;
                     data.countries = [];
-                    r.forEach((item, i) => {
-                        const innerData = {};
-                        innerData.isoA2 = item.countryCode;
-                        innerData.country = item.country;
-                        innerData.confirmed = item.totalConfirmed;
-                        innerData.deaths = item.totalDeaths;
-                        innerData.recovered = item.totalRecovered;
-                        innerData.latlng = [item.lat, item.lng];
-                        data.countries[i] = innerData;
-                    });
+                    if (r.length) {
+                        r.forEach((item, i) => {
+                            const innerData = {};
+                            apply(innerData, "isoA2", () => item.countryCode);
+                            apply(innerData, "country", () => item.country);
+                            apply(innerData, "confirmed", () => item.totalConfirmed);
+                            apply(innerData, "deaths", () => item.totalDeaths);
+                            apply(innerData, "recovered", () => item.totalRecovered);
+                            apply(innerData, "latlng", () => [item.lat, item.lng]);
+                            data.countries[i] = innerData;
+                        });
+                    }
                     return data;
 
                 case "openexchangerates":
-                    r = result.rates;
+                    r = result.rates || "-";
                     data.conversions = r;
                     return data;
 
@@ -261,23 +260,25 @@
                     return data;
 
                 case "opencagereverse":
-                    r = result.results[0].components["ISO_3166-1_alpha-2"];
+                    r = result.results[0].components["ISO_3166-1_alpha-2"] || "-";
                     data.lastIsoA2 = r;
                     return data;
 
                 case "reliefwebglobal":
                     r = result.data;
                     data.disasters = [];
-                    r.forEach((item, i) => {
-                        const innerData = {};
-                        innerData.name = item.fields.name;
-                        innerData.url = item.fields.url_alias;
-                        innerData.isoA3 = item.fields.primary_country.iso3.toUpperCase();
-                        innerData.date = item.fields.date.created.substr(0, 10);
-                        innerData.type = item.fields.primary_type.name;
-                        innerData.glide = item.fields.glide.substr(0, 2);
-                        data.disasters[i] = innerData;
-                    });
+                    if (r.length) {
+                        r.forEach((item, i) => {
+                            const innerData = {};
+                            apply(innerData, "name", () => item.fields.name);
+                            apply(innerData, "url", () => item.fields.url_alias);
+                            apply(innerData, "isoA3", () => item.fields.primary_country.iso3.toUpperCase());
+                            apply(innerData, "date", () => item.fields.date.created.substr(0, 10));
+                            apply(innerData, "type", () => item.fields.primary_type.name);
+                            apply(innerData, "glide", () => item.fields.glide.substr(0, 2));
+                            data.disasters[i] = innerData;
+                        });
+                    }
                     return data;
 
                 default:
@@ -286,11 +287,6 @@
         }
 
         __requiresUpdate(endpoint) {
-            console.log("START REQUIRES UPDATE");
-            console.log("all endpoints", GLOBAL_ENDPOINTS);
-            console.log("endpoint", endpoint);
-            console.log("current expiries", this.expiries);
-            console.log("END REQUIRES UPDATE");
             return GLOBAL_ENDPOINTS.some(i => i === endpoint)
                 && (!this.expiries[endpoint] ||
                     (this.expiries[endpoint] !== -1
@@ -420,13 +416,13 @@
             switch (endpoint) {
                 case "ambeeair":
                     r = result.stations[0];
-                    data.no2 = r.NO2;
-                    data.pm10 = r.PM10;
-                    data.pm25 = r.PM25;
-                    data.so2 = r.SO2;
-                    data.ozone = r.OZONE;
-                    data.aqi = r.AQI;
-                    data.category = r.aqiInfo.category;
+                    apply(data, "no2", () => r.NO2);
+                    apply(data, "pm10", () => r.PM10);
+                    apply(data, "pm25", () => r.PM25);
+                    apply(data, "so2", () => r.SO2);
+                    apply(data, "ozone", () => r.OZONE);
+                    apply(data, "aqi", () => r.AQI);
+                    apply(data, "category", () => r.aqiInfo.category);
                     console.log(data);
                     return data;
 
@@ -439,25 +435,25 @@
                     r = result[0];
                     const g = dataArray["GLOBAL"].data.coronatrackerglobal;
                     const countryPopMod = r.totalConfirmed / r.totalConfirmedPerMillionPopulation;
-                    data.infectionFatality = Math.round(r.FR * 100) / 100 + "%";
-                    data.caseFatality = Math.round(r.totalDeaths / (r.totalDeaths + r.totalRecovered) * 10000) / 100 + "%";
-                    data.recovery = Math.round(r.PR * 100) / 100 + "%";
-                    data.confirmed = r.totalConfirmed;
-                    data.active = r.activeCases;
-                    data.critical = r.totalCritical;
-                    data.recoveries = r.totalRecovered;
-                    data.deaths = r.totalDeaths;
-                    data.confirmedMil = Math.round(r.totalConfirmed / countryPopMod);
-                    data.activeMil = Math.round(r.activeCases / countryPopMod);
-                    data.criticalMil = Math.round(r.totalCritical / countryPopMod);
-                    data.recoveriesMil = Math.round(r.totalRecovered / countryPopMod);
-                    data.deathsMil = Math.round(r.totalDeaths / countryPopMod);
-                    data.confirmedPercent = Math.round(r.totalConfirmed / g.confirmedRaw * 10000) / 100 + "%";
-                    data.activePercent = Math.round(r.activeCases / g.activeRaw * 10000) / 100 + "%";
-                    data.recoveriesPercent = Math.round(r.totalRecovered / g.recoveriesRaw * 10000) / 100 + "%";
-                    data.deathsPercent = Math.round(r.totalDeaths / g.deathsRaw * 10000) / 100 + "%";
-                    data.newCases = r.dailyConfirmed;
-                    data.newDeaths = r.dailyDeaths;
+                    apply(data, "infectionFatality", () => Math.round(r.FR * 100) / 100 + "%");
+                    apply(data, "caseFatality", () => Math.round(r.totalDeaths / (r.totalDeaths + r.totalRecovered) * 10000) / 100 + "%");
+                    apply(data, "recovery", () => Math.round(r.PR * 100) / 100 + "%");
+                    apply(data, "confirmed", () => r.totalConfirmed);
+                    apply(data, "active", () => r.activeCases);
+                    apply(data, "critical", () => r.totalCritical);
+                    apply(data, "recoveries", () => r.totalRecovered);
+                    apply(data, "deaths", () => r.totalDeaths);
+                    apply(data, "confirmedMil", () => Math.round(r.totalConfirmed / countryPopMod));
+                    apply(data, "activeMil", () => Math.round(r.activeCases / countryPopMod));
+                    apply(data, "criticalMil", () => Math.round(r.totalCritical / countryPopMod));
+                    apply(data, "recoveriesMil", () => Math.round(r.totalRecovered / countryPopMod));
+                    apply(data, "deathsMil", () => Math.round(r.totalDeaths / countryPopMod));
+                    apply(data, "confirmedPercent", () => Math.round(r.totalConfirmed / g.confirmedRaw * 10000) / 100 + "%");
+                    apply(data, "activePercent", () => Math.round(r.activeCases / g.activeRaw * 10000) / 100 + "%");
+                    apply(data, "recoveriesPercent", () => Math.round(r.totalRecovered / g.recoveriesRaw * 10000) / 100 + "%");
+                    apply(data, "deathsPercent", () => Math.round(r.totalDeaths / g.deathsRaw * 10000) / 100 + "%");
+                    apply(data, "newCases", () => r.dailyConfirmed);
+                    apply(data, "newDeaths", () => r.dailyDeaths);
                     return data;
 
                 case "coronatrackertrend":
@@ -468,11 +464,13 @@
                     for (let i = 0; i < r.length; i++) {
                         const item = r[i];
                         const innerData = {};
-                        innerData.confirmed = item.total_confirmed.toLocaleString() + " (+" + (item.total_confirmed - lastConfirmed).toLocaleString() + ")";
+                        apply(innerData, "confirmed", () => item.total_confirmed.toLocaleString() 
+                                + " (+" + (item.total_confirmed - lastConfirmed).toLocaleString() + ")");
                         lastConfirmed = item.total_confirmed;
-                        innerData.deaths = item.total_deaths.toLocaleString() + " (+" + (item.total_deaths - lastDeaths).toLocaleString() + ")";
+                        apply(innerData, "deaths", () => item.total_deaths.toLocaleString() 
+                                + " (+" + (item.total_deaths - lastDeaths).toLocaleString() + ")");
                         lastDeaths = item.total_deaths;
-                        innerData.date = item.last_updated.substr(0, 10);
+                        apply(innerData, "date", () => item.last_updated.substr(0, 10));
                         data.trends[i] = innerData;
                     }
                     data.trends.sort((p, q) => p.date < q.date);
@@ -480,125 +478,140 @@
 
                 case "opencageforward":
                     r = result.results[0];
-                    data.callingCode = r.annotations.callingcode;
-                    data.drivingSide = r.annotations.roadinfo.drive_on;
-                    data.drivingUnits = r.annotations.roadinfo.speed_in;
+                    apply(data, "callingCode", () => r.annotations.callingcode);
+                    apply(data, "drivingSide", () => r.annotations.roadinfo.drive_on);
+                    apply(data, "drivingUnits", () => r.annotations.roadinfo.speed_in);
                     data.sunrise = {};
-                    data.sunrise.apparent = r.annotations.sun.rise.apparent;
-                    data.sunrise.astronomical = r.annotations.sun.rise.astronomical;
-                    data.sunrise.civil = r.annotations.sun.rise.civil;
-                    data.sunrise.nautical = r.annotations.sun.rise.nautical;
+                    apply(data.sunrise, "apparent", () => r.annotations.sun.rise.apparent);
+                    apply(data.sunrise, "astronomical", () => r.annotations.sun.rise.astronomical);
+                    apply(data.sunrise, "civil", () => r.annotations.sun.rise.civil);
+                    apply(data.sunrise, "nautical", () => r.annotations.sun.rise.nautical);
                     data.sunset = {};
-                    data.sunset.apparent = r.annotations.sun.set.apparent;
-                    data.sunset.astronomical = r.annotations.sun.set.astronomical;
-                    data.sunset.civil = r.annotations.sun.set.civil;
-                    data.sunset.nautical = r.annotations.sun.set.nautical;
-                    data.timezone = r.annotations.timezone.name;
-                    data.timezoneShort = r.annotations.timezone.short_name;
-                    data.timezoneOffset = r.annotations.timezone.offset_string;
-                    data.wikidataKey = r.annotations.wikidata;
-                    data.isoA2 = r.components["ISO_3166-1_alpha-2"];
-                    data.isoA3 = r.components["ISO_3166-1_alpha-3"];
-                    data.continent = r.components.continent;
-                    data.country = r.components.country;
-                    data.cityLat = r.geometry.lat;
-                    data.cityLng = r.geometry.lng;
+                    apply(data.sunset, "apparent", () => r.annotations.sun.set.apparent);
+                    apply(data.sunset, "astronomical", () => r.annotations.sun.set.astronomical);
+                    apply(data.sunset, "civil", () => r.annotations.sun.set.civil);
+                    apply(data.sunset, "nautical", () => r.annotations.sun.set.nautical);
+                    apply(data, "timezone", () => r.annotations.timezone.name);
+                    apply(data, "timezoneShort", () => r.annotations.timezone.short_name);
+                    apply(data, "timezoneOffset", () => r.annotations.timezone.offset_string);
+                    apply(data, "wikidataKey", () => r.annotations.wikidata);
+                    apply(data, "isoA2", () => r.components["ISO_3166-1_alpha-2"]);
+                    apply(data, "isoA3", () => r.components["ISO_3166-1_alpha-3"]);
+                    apply(data, "continent", () => r.components.continent);
+                    apply(data, "country", () => r.components.country);
+                    apply(data, "cityLat", () => r.geometry.lat);
+                    apply(data, "cityLng", () => r.geometry.lng);
                     if (r.annotations.currency) {
-                        data.currencyDecimal = r.annotations.currency.decimal_mark;
-                        data.currencySymbol = r.annotations.currency.html_entity || r.annotations.currency.symbol;
-                        data.currencyIso = r.annotations.currency.iso_code;
-                        data.currencyUnit = r.annotations.currency.name;
-                        data.currencySubunit = r.annotations.currency.subunit;
-                        data.currencyRatio = r.annotations.currency.subunit_to_unit;
-                        data.currencySeparator = r.annotations.currency.thousands_separator;
-                        data.currencySymbolFirst = r.annotations.currency.symbol_first;
-                        data.currencyFormat = r.annotations.currency.format;
+                        apply(data, "currencyDecimal", () => r.annotations.currency.decimal_mark);
+                        apply(data, "currencySymbol", () => r.annotations.currency.html_entity || r.annotations.currency.symbol);
+                        apply(data, "currencyIso", () => r.annotations.currency.iso_code);
+                        apply(data, "currencyUnit", () => r.annotations.currency.name);
+                        apply(data, "currencySubunit", () => r.annotations.currency.subunit);
+                        apply(data, "currencyRatio", () => r.annotations.currency.subunit_to_unit);
+                        apply(data, "currencySeparator", () => r.annotations.currency.thousands_separator);
+                        apply(data, "currencySymbolFirst", () => r.annotations.currency.symbol_first);
+                        apply(data, "currencyFormat", () => r.annotations.currency.format);
                     }
                     return data;
 
                 case "reliefwebdisasters":
                     r = result.data;
                     data.disasters = [];
-                    r.forEach((item, i) => {
-                        const innerData = {};
-                        innerData.name = item.fields.name;
-                        innerData.url = item.fields.url_alias;
-                        innerData.date = item.fields.date.created.substr(0, 10);
-                        innerData.type = item.fields.primary_type.name;
-                        innerData.extract = '"' + (item.fields.description || "").substr(0, 100) + '..."';
-                        innerData.status = item.fields.status;
-                        innerData.glide = item.fields.glide.substr(0, 2);
-                        data.disasters[i] = innerData;
-                    });
+                    if (r.length) {
+                        r.forEach((item, i) => {
+                            const innerData = {};
+                            apply(innerData, "name", () => item.fields.name);
+                            apply(innerData, "url", () => item.fields.url_alias);
+                            apply(innerData, "date", () => item.fields.date.created.substr(0, 10));
+                            apply(innerData, "type", () => item.fields.primary_type.name);
+                            apply(innerData, "extract", () => '"' + (item.fields.description || "").substr(0, 100) + '..."');
+                            apply(innerData, "status", () => item.fields.status);
+                            apply(innerData, "glide", () => item.fields.glide.substr(0, 2));
+                            data.disasters[i] = innerData;
+                        });
+                    }
                     return data;
 
                 case "reliefwebreports":
                     r = result.data;
                     data.reports = [];
-                    r.forEach((item, i) => {
-                        const innerData = {};
-                        innerData.name = item.fields.title;
-                        innerData.url = item.fields.url_alias;
-                        innerData.date = item.fields.date.created.substr(0, 10);
-                        innerData.format = item.fields.format[0].name;
-                        innerData.theme = item.fields.theme[0].name;
-                        innerData.source = item.fields.source[0].shortname;
-                        data.reports[i] = innerData;
-                    });
+                    if (r.length) {
+                        r.forEach((item, i) => {
+                            const innerData = {};
+                            apply(innerData, "name", () => item.fields.title);
+                            apply(innerData, "url", () => item.fields.url_alias);
+                            apply(innerData, "date", () => item.fields.date.created.substr(0, 10));
+                            apply(innerData, "format", () => item.fields.format[0].name);
+                            apply(innerData, "theme", () => item.fields.theme[0].name);
+                            apply(innerData, "source", () => item.fields.source[0].shortname);
+                            data.reports[i] = innerData;
+                        });
+                    }
                     return data;
 
                 case "restcountries":
                     r = result;
-                    data.webDomain = r.topLevelDomain;
-                    data.countryLong = r.name;
-                    data.isoA2 = r.alpha2Code;
-                    data.isoA3 = r.alpha3Code;
+                    apply(data, "webDomain", () => r.topLevelDomain);
+                    apply(data, "countryLong", () => r.name);
+                    apply(data, "isoA2", () => r.alpha2Code);
+                    apply(data, "isoA3", () => r.alpha3Code);
                     data.callingCodes = [];
-                    r.callingCodes.forEach((item, i) => {
-                        data.callingCodes[i] = "+" + item;
-                    });
-                    data.capital = r.capital;
+                    if (r.callingCodes.length) {
+                        r.callingCodes.forEach((item, i) => {
+                            data.callingCodes[i] = "+" + item;
+                        });
+                    }
+                    apply(data, "capital", () => r.capital);
                     data.synonyms = [];
-                    r.altSpellings.forEach((item, i) => {
-                        data.synonyms[i] = item;
-                    });
-                    data.region = r.region;
-                    data.subregion = r.subregion;
-                    data.population = r.population;
-                    data.demonym = r.demonym;
-                    data.areaKm = r.area;
-                    data.gini = r.gini;
+                    if (r.altSpellings.length) {
+                        r.altSpellings.forEach((item, i) => {
+                            data.synonyms[i] = item;
+                        });
+                    }
+                    apply(data, "region", () => r.region);
+                    apply(data, "subregion", () => r.subregion);
+                    apply(data, "population", () => r.population);
+                    apply(data, "demonym", () => r.demonym);
+                    apply(data, "areaKm", () => r.area);
+                    apply(data, "gini", () => r.gini);
                     data.borderedCountries = [];
-                    r.borders.forEach((item, i) => {
-                        data.borderedCountries[i] = item;
-                    });
-                    data.nativeName = r.nativeName;
-                    data.isoN = r.numericCode;
+                    if (r.borders.length) {
+                        r.borders.forEach((item, i) => {
+                            data.borderedCountries[i] = item;
+                        });
+                    }
+                    apply(data, "nativeName", () => r.nativeName);
+                    apply(data, "isoN", () => r.numericCode);
                     data.currencies = [];
+                    if (r.currencies.length)
                     r.currencies.forEach((item, i) => {
                         const innerData = {};
-                        innerData.name = item.name;
-                        innerData.isoA3 = item.code;
-                        innerData.symbol = item.symbol;
+                        apply(innerData, "name", () => item.name);
+                        apply(innerData, "isoA3", () => item.code);
+                        apply(innerData, "symbol", () => item.symbol);
                         data.currencies[i] = innerData;
                     });
                     data.languages = [];
-                    r.languages.forEach((item, i) => {
-                        const innerData = {};
-                        innerData.name = item.name;
-                        innerData.isoA2 = item.iso639_1;
-                        innerData.isoA3 = item.iso639_2;
-                        data.languages[i] = innerData;
-                    });
-                    data.flagUrl = r.flag;
+                    if (r.languages.length) {
+                        r.languages.forEach((item, i) => {
+                            const innerData = {};
+                            apply(innerData, "name", () => item.name);
+                            apply(innerData, "isoA2", () => item.iso639_1);
+                            apply(innerData, "isoA3", () => item.iso639_2);
+                            data.languages[i] = innerData;
+                        });
+                    }
+                    data.flagUrl = r.flag || "-";
                     data.regionalBlocs = [];
-                    r.regionalBlocs.forEach((item, i) => {
-                        const innerData = {};
-                        innerData.name = item.name;
-                        innerData.acronym = item.acronym;
-                        innerData.isoA3 = item.iso639_2;
-                        data.regionalBlocs[i] = innerData;
-                    });
+                    if (r.regionalBlocs.length) {
+                        r.regionalBlocs.forEach((item, i) => {
+                            const innerData = {};
+                            apply(innerData, "name", () => item.name);
+                            apply(innerData, "acronym", () => item.acronym);
+                            apply(innerData, "isoA3", () => item.iso639_2);
+                            data.regionalBlocs[i] = innerData;
+                        });
+                    }
                     return data;
 
                 case "thenews":
@@ -607,11 +620,11 @@
                     for (let i = 0; i < r.length; i++) {
                         const item = r[i];
                         const innerData = {};
-                        innerData.title = item.title;
-                        innerData.extract = item.snippet;
-                        innerData.link = item.url;
-                        innerData.image = item.image_url;
-                        innerData.date = item.published_at.substr(0, 10);
+                        apply(innerData, "title", () => item.title);
+                        apply(innerData, "extract", () => item.snippet);
+                        apply(innerData, "link", () => item.url);
+                        apply(innerData, "image", () => item.image_url);
+                        apply(innerData, "date", () => item.published_at.substr(0, 10));
                         data.articles.push(innerData);
                     }
                     return data;
@@ -619,46 +632,50 @@
                 case "wikimedia":
                     r = result.query.pages;
                     data.pages = [];
-                    Object.keys(r).forEach(i => {
-                        const item = r[i];
-                        const innerData = {};
-                        innerData.title = item.title;
-                        innerData.pageUrl = "https://en.wikipedia.org/?curid=" + item.pageid;
-                        innerData.thumbnailUrl = item.pageimage ? "https://commons.wikimedia.org/wiki/Special:FilePath/" + item.pageimage + "?width=80px" : "";
-                        innerData.extract = item.extract;
-                        data.pages.push(innerData);
-                    });
+                    if (!$.isEmptyObject(r)) {
+                        Object.keys(r).forEach(i => {
+                            const item = r[i];
+                            const innerData = {};
+                            apply(innerData, "title", () => item.title);
+                            apply(innerData, "pageUrl", () => "https://en.wikipedia.org/?curid=" + item.pageid);
+                            apply(innerData, "thumbnailUrl", () => "https://commons.wikimedia.org/wiki/Special:FilePath/" + item.pageimage + "?width=80px");
+                            apply(innerData, "extract", () => item.extract);
+                            data.pages.push(innerData);
+                        });
+                    }
                     return data;
 
                 case "yahooweather":
                     r = result;
                     data.now = {};
-                    data.now.date = r.current_observation.pubDate;
-                    data.now.city = r.location.city;
-                    data.now.region = r.location.region;
-                    data.now.windChillC = r.current_observation.wind.chill;
-                    data.now.windDirectionDeg = r.current_observation.wind.direction;
-                    data.now.windSpeedKph = r.current_observation.wind.speed;
-                    data.now.humidityPerc = r.current_observation.atmosphere.humidity;
-                    data.now.visibilityKm = r.current_observation.atmosphere.visibility;
-                    data.now.pressureMbar = r.current_observation.atmosphere.pressure;
-                    data.now.sunrise = r.current_observation.astronomy.sunrise;
-                    data.now.sunset = r.current_observation.astronomy.sunset;
+                    apply(data.now, "date", () => r.current_observation.pubDate);
+                    apply(data.now, "city", () => r.location.city);
+                    apply(data.now, "region", () => r.location.region);
+                    apply(data.now, "windChillC", () => r.current_observation.wind.chill);
+                    apply(data.now, "windDirectionDeg", () => r.current_observation.wind.direction);
+                    apply(data.now, "windSpeedKph", () => r.current_observation.wind.speed);
+                    apply(data.now, "humidityPerc", () => r.current_observation.atmosphere.humidity);
+                    apply(data.now, "visibilityKm", () => r.current_observation.atmosphere.visibility);
+                    apply(data.now, "pressureMbar", () => r.current_observation.atmosphere.pressure);
+                    apply(data.now, "sunrise", () => r.current_observation.astronomy.sunrise);
+                    apply(data.now, "sunset", () => r.current_observation.astronomy.sunset);
                     data.now.weather = {};
-                    data.now.weather.name = r.current_observation.condition.text;
-                    data.now.weather.image = "https://s.yimg.com/zz/combo?a/i/us/nws/weather/gr/" + r.current_observation.condition.code + "d.png";
-                    data.now.weather.temperatureC = r.current_observation.condition.temperature;
+                    apply(data.now.weather, "name", () => r.current_observation.condition.text);
+                    apply(data.now.weather, "image", () => "https://s.yimg.com/zz/combo?a/i/us/nws/weather/gr/" + r.current_observation.condition.code + "d.png");
+                    apply(data.now.weather, "temperatureC", () => r.current_observation.condition.temperature);
                     data.forecasts = [];
-                    r.forecasts.forEach((item, i) => {
-                        const innerData = {};
-                        innerData.name = item.text;
-                        innerData.date = item.date;
-                        innerData.day = item.day;
-                        innerData.image = "https://s.yimg.com/zz/combo?a/i/us/nws/weather/gr/" + item.code + "d.png";
-                        innerData.lowC = item.low;
-                        innerData.highC = item.high;
-                        data.forecasts[i] = innerData;
-                    });
+                    if (r.forecasts.length) {
+                        r.forecasts.forEach((item, i) => {
+                            const innerData = {};
+                            apply(innerData, "name", () => item.text);
+                            apply(innerData, "date", () => item.date);
+                            apply(innerData, "day", () => item.day);
+                            apply(innerData, "image", () => "https://s.yimg.com/zz/combo?a/i/us/nws/weather/gr/" + item.code + "d.png");
+                            apply(innerData, "lowC", () => item.low);
+                            apply(innerData, "highC", () => item.high);
+                            data.forecasts[i] = innerData;
+                        });
+                    }
                     return data;
 
                 default:
@@ -670,14 +687,14 @@
             const d = this.data;
             const global = dataArray["GLOBAL"].data.countries[this.id];
             this.params.isoA2 = this.id;
-            this.params.isoA3 = d.restcountries ? d.restcountries.isoA3 : global.cca3;
-            this.params.city = d.restcountries ? d.restcountries.capital : global.capital[0];
+            this.params.isoA3 = d.restcountries && d.restcountries.isoA3 || global.cca3;
+            this.params.city = d.restcountries && d.restcountries.capital || global.capital[0];
             const now = new Date();
             this.params.dateEnd = now.toISOString().substr(0, 10);
             now.setDate(now.getDate() - 10);
             this.params.dateStart = now.toISOString().substr(0, 10);
-            this.params.lat = d.opencageforward ? d.opencageforward.cityLat : global.latlng[0];
-            this.params.lng = d.opencageforward ? d.opencageforward.cityLng : global.latlng[1];
+            this.params.lat = d.opencageforward && d.opencageforward.cityLat || global.latlng[0];
+            this.params.lng = d.opencageforward && d.opencageforward.cityLng || global.latlng[1];
             for (let i = 0; i < this.params; i++) {
                 this.params[i] = encodeURIComponent(this.params[i]);
             }
@@ -692,6 +709,16 @@
 
         __cache() {
             localStorage.setObject(this.id, this);
+        }
+    }
+
+    const apply = (obj, val, tryFunction = () => {}, def = "") => {
+        try {
+            obj[val] = tryFunction() || def;
+            return true;
+        } catch(e) {
+            obj[val] = def;
+            return false;
         }
     }
 
