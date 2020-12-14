@@ -4,7 +4,14 @@
     min-width: 3.2rem;
     min-height: 3.2rem;
     fill: var(--primary);
-    transition: rotate var(--slow) linear;
+}
+
+.iconSmall {
+    max-width: 2.4rem;
+    max-height: 2.4rem;
+    min-width: 2.4rem;
+    min-height: 2.4rem;
+    fill: var(--primary);
 }
 
 .mapIcon svg {
@@ -47,6 +54,7 @@
     overflow-y: auto;
     scrollbar-width: thin;
     pointer-events: visible;
+    text-align: end;
 }
 
 .menu:first-child { border-top-left-radius: 1rem; }
@@ -221,6 +229,8 @@
     margin-left: 2rem;
     margin-right: 2rem;
 }
+
+.mR { margin-right: 1rem; }
 
 .mT {
     margin-top: 1rem;

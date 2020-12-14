@@ -103,7 +103,7 @@ $(window).on("load", async () => {
     );
 
     $(".iconBtn").on("click", function() {
-        $("#menus .menu").slideUp(100);
+        $(".menu").slideUp(100);
         let menu;
         switch (this.id) {
             case "zoomInButton":
@@ -157,6 +157,40 @@ $(window).on("load", async () => {
     $("#markerMenu .btn").on("click", function() {
         setMarker($(this));
     });
+
+    $("#search").on("input", () => {
+        if ($("#searchMenu").is(":hidden")) {
+            closeOpenMenus();
+            $("#searchMenu").slideDown(100);
+        }
+        const value = $("#search").val().toUpperCase();
+        if (value === "") return $("#searchMenu").slideUp(100);
+        const suggestions = [];
+        globalData.requestData([], (data, event) => {
+            for (let i = 0; i < Object.keys(data.countries).length; i++) {
+                if (suggestions.length > 9) break;
+                const country = data.countries[Object.keys(data.countries)[i]];
+                if (country.cca2.includes(value) || country.cca3.includes(value) || country.name.toUpperCase().includes(value)) {
+                    suggestions.push(country.cca2 + "/" + country.cca3 + " - " + country.name);
+                }
+            }
+        });
+        let htmlString = "<ul>";
+        for (let i = 0; i < suggestions.length; i++) {
+            htmlString += `
+            <li>
+                <button class="btn tLabel" data-group="searchResults" data-type="single" data-ref="`+suggestions[i].substr(0, 2)+`" role="menuitemradio" tabindex="0">`+suggestions[i]+`</button>
+            </li>
+            `;
+        }
+        htmlString += "</ul>";
+        $("#searchMenu").html(htmlString);
+        $("#searchMenu .btn").on("click", function() {
+            closeOpenMenus();
+            setCountry($(this).data("ref"));
+        });
+        console.log(suggestions);
+    });
 });
 
 const closeOpenMenus = () => {
@@ -177,7 +211,7 @@ const closeOpenMenus = () => {
 
 const hideLoader = () => {
     if ($("#preloader").length) {
-        $("#preloader").delay(100).fadeOut("slow", () => {
+        $("#preloader").delay(100).fadeOut("slow", function() {
             $(this).remove();
         });
     }
@@ -190,6 +224,7 @@ const locateAndSetCountry = async (lat = 52, lng = 0) => {
 }
 
 const setCountry = async isoA2 => {
+    $("#search").val("");
     countryData = await Data.getCountry(isoA2);
     await globalData.requestData(["reliefwebglobal"], (data, event) => {
         let layer = getBorderLayer(isoA2);

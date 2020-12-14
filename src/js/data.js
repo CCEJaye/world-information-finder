@@ -333,7 +333,6 @@
             if (cachedObject) {
                 Object.assign(this, cachedObject);
             } else {
-                await this.requestData(["restcountries"]);
                 await this.requestData(["opencageforward", "arcgisgeometry"]);
             }
         }
@@ -672,7 +671,7 @@
             const global = dataArray["GLOBAL"].data.countries[this.id];
             this.params.isoA2 = this.id;
             this.params.isoA3 = d.restcountries ? d.restcountries.isoA3 : global.cca3;
-            this.params.city = d.restcountries ? d.restcountries.capital : global.capital;
+            this.params.city = d.restcountries ? d.restcountries.capital : global.capital[0];
             const now = new Date();
             this.params.dateEnd = now.toISOString().substr(0, 10);
             now.setDate(now.getDate() - 10);

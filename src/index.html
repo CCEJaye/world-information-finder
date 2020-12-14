@@ -25,9 +25,16 @@
             <div id="map"></div>
         </main>
 
-        <header id="banner" class="pad drop">
-            <img class="icon floatL" src="favicon.png" alt="Icon">
-            <h1 class="tHeading6 indent pad">World Information Finder</h1>
+        <header id="banner" class="grid gR gGapBig gBanner pad drop">
+            <img class="icon" src="favicon.png" alt="Icon">
+            <h1 class="tHeading6">World Information Finder</h1>
+            <div>
+                <input id="search" class="tHeading6 tR" type="text" placeholder="Start typing a country name or ISO code">
+                <div id="searchMenu" class="menu" role="menu"></div>
+            </div>
+            <svg class="iconSmall" role="img">
+                <use xlink:href="img/icons.svg#search"></use>
+            </svg>
         </header>
         
         <section id="header">

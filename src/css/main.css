@@ -92,10 +92,20 @@ html {
 #banner {
     grid-area: banner;
     background: var(--secondary);
+    z-index: 100;
 }
 
-    #banner img {
-        margin-right: 1rem;
+    #search {
+        height: 100%;
+        width: 100%;
+        position: relative;
+    }
+
+    #searchMenu {
+        max-height: 50vh;
+        right: 2rem;
+        bottom: unset;
+        top: 100%;
     }
 
 #header {
@@ -177,6 +187,7 @@ html {
 
 .gWeatherC { grid-template-columns: 1fr minmax(0, 3fr) 1fr 1fr 1fr 1fr; }
 .gExchangeC { grid-template-columns: 1fr 2fr minmax(0, 3fr); }
+.gBanner { grid-template-columns: min-content 1fr 1fr; }
 
 a, a:link {
     color: var(--primary);
