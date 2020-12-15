@@ -158,17 +158,16 @@ $(window).on("load", async () => {
         setMarker($(this));
     });
 
-    $("#search").on("input", () => {
+    $("#search").on("input focus", () => {
         if ($("#searchMenu").is(":hidden")) {
             closeOpenMenus();
             $("#searchMenu").slideDown(100);
         }
         const value = $("#search").val().toUpperCase();
-        if (value === "") return $("#searchMenu").slideUp(100);
         const suggestions = [];
         globalData.requestData([], (data, event) => {
             for (let i = 0; i < Object.keys(data.countries).length; i++) {
-                if (suggestions.length > 9) break;
+                if (value !== "" && suggestions.length > 19) break;
                 const country = data.countries[Object.keys(data.countries)[i]];
                 if (country.cca2.includes(value) || country.cca3.includes(value) || country.name.toUpperCase().includes(value)) {
                     suggestions.push(country.cca2 + "/" + country.cca3 + " - " + country.name);
