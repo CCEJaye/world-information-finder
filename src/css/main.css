@@ -39,6 +39,10 @@
     max-width: 52rem;
 }
 
+#menus {
+    grid-area: side;
+}
+
 @media only screen and (max-aspect-ratio: 7 / 12) {
     #body {
         grid-template-areas: 
@@ -94,19 +98,6 @@ html {
     background: var(--secondary);
     z-index: 100;
 }
-
-    #search {
-        height: 100%;
-        width: 100%;
-        position: relative;
-    }
-
-    #searchMenu {
-        max-height: 50vh;
-        right: 2rem;
-        bottom: unset;
-        top: 100%;
-    }
 
 #header {
     grid-area: header;
@@ -169,7 +160,6 @@ html {
     }
 
 #menus {
-    grid-area: side;
     position: relative;
     margin: 2rem;
     pointer-events: none;
@@ -187,7 +177,6 @@ html {
 
 .gWeatherC { grid-template-columns: 1fr minmax(0, 3fr) 1fr 1fr 1fr 1fr; }
 .gExchangeC { grid-template-columns: 1fr 2fr minmax(0, 3fr); }
-.gBanner { grid-template-columns: min-content 1fr 1fr; }
 
 a, a:link {
     color: var(--primary);

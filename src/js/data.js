@@ -75,14 +75,14 @@
             return await global.requestData(
                 ["opencagereverse"],
                 async (data) => {
-                    countryCode = data.opencagereverse.lastIsoA2 || "";
-                    if (countryCode) {
+                    countryCode = data.opencagereverse.lastIsoA2;
+                    if (countryCode.length) {
                         return await getCountryData(countryCode);
                     } else {
-                        throw "error";
+                        return false;
                     }
                 },
-                params = {lat: lat, lng: lng}
+                params = { lat: lat, lng: lng }
             );
         }
     }
@@ -124,7 +124,9 @@
             const cachedObject = localStorage.getObject(this.id);
             if (cachedObject) {
                 Object.assign(this, cachedObject);
-            } 
+            } else {
+                await this.requestData(["coronatrackerglobal"]);
+            }
             if (!this.data.countries || $.isEmptyObject(this.data.countries)) {
                 const result = await Util.ajaxGet("data/countries.json");
                 if (!result.error) {
@@ -143,35 +145,30 @@
 
             const invalidEndpoints = [];
             endpoints.forEach(i => {
-                if (this.__requiresUpdate(i)) {
+                if (this._requiresUpdate(i)) {
                     invalidEndpoints.push(i);
                 }
             });
 
             let fetchEvents = [];
             if (invalidEndpoints.length) {
-                fetchEvents = await this.__fetchDataAndApply(invalidEndpoints, params);
+                fetchEvents = await this._fetchDataAndApply(invalidEndpoints, params);
             } else {
                 events.push(EVENT_NOT_UPDATED);
             }
 
             Util.pushUnique(events, fetchEvents);
-            console.log("global events", events);
-            console.log("endpoints", endpoints);
-            console.log("invalid endpoints", invalidEndpoints);
             this.isUpdating = false;
             return onComplete(this.data, events);
         }
 
-        async __fetchDataAndApply(endpoints = [], params = {}) {
+        async _fetchDataAndApply(endpoints = [], params = {}) {
             let events = [];
             let ajax;
             try {
                 ajax = await Util.ajaxPost("php/request.php", {
                     endpoints: endpoints, params: params});
-            } catch(e) {
-                console.log(e);
-            }
+            } catch(e) {}
 
             if (!ajax) {
                 return [EVENT_AJAX_ERROR];
@@ -185,7 +182,7 @@
                     events.push(EVENT_ENDPOINT_RESPONSE_MISSING);
                     continue;
                 }
-                let harvest = this.__harvestData(current, ajax.data[current]);
+                let harvest = this._harvestData(current, ajax.data[current]);
                 if (!harvest) {
                     events.push(EVENT_HARVEST_INCOMPLETE);
                     continue;
@@ -205,11 +202,11 @@
                     events.push(EVENT_HARVEST_FAILED);
                 }
             }
-            this.__cache();
+            this._cache();
             return events;
         }
 
-        __harvestData(endpoint, result) {
+        _harvestData(endpoint, result) {
             const data = {errors: []};
             let r;
             switch (endpoint) {
@@ -250,7 +247,7 @@
                     return data;
 
                 case "openexchangerates":
-                    r = result.rates || "-";
+                    r = result.rates;
                     data.conversions = r;
                     return data;
 
@@ -260,8 +257,7 @@
                     return data;
 
                 case "opencagereverse":
-                    r = result.results[0].components["ISO_3166-1_alpha-2"] || "-";
-                    data.lastIsoA2 = r;
+                    apply(data, "lastIsoA2", () => result.results[0].components["ISO_3166-1_alpha-2"]);
                     return data;
 
                 case "reliefwebglobal":
@@ -286,14 +282,14 @@
             }
         }
 
-        __requiresUpdate(endpoint) {
+        _requiresUpdate(endpoint) {
             return GLOBAL_ENDPOINTS.some(i => i === endpoint)
                 && (!this.expiries[endpoint] ||
                     (this.expiries[endpoint] !== -1
                     && this.expiries[endpoint] < Date.now() + EXPIRY_BUFFER));
         }
 
-        __cache() {
+        _cache() {
             localStorage.setObject(this.id, this);
         }
 
@@ -305,7 +301,7 @@
                 this.data.borders[isoA2] = Util.ringsToPolygon(isoA2, data);
             }
 
-            this.__cache();
+            this._cache();
         }
     }
 
@@ -343,35 +339,32 @@
 
             const invalidEndpoints = [];
             endpoints.forEach(i => {
-                if (this.__requiresUpdate(i)) {
+                if (this._requiresUpdate(i)) {
                     invalidEndpoints.push(i);
                 }
             });
 
             let fetchEvents;
             if (invalidEndpoints.length) {
-                fetchEvents = await this.__fetchDataAndApply(invalidEndpoints);
+                fetchEvents = await this._fetchDataAndApply(invalidEndpoints);
             } else {
                 events.push(EVENT_NOT_UPDATED);
             }
 
             Util.pushUnique(events, fetchEvents);
-            console.log("country events", events);
             this.isUpdating = false;
             return onComplete(this.data, events);
         }
 
-        async __fetchDataAndApply(endpoints = []) {
-            this.__reassignParams();
+        async _fetchDataAndApply(endpoints = []) {
+            this._reassignParams();
 
             let events = [];
             let ajax;
             try {
                 ajax = await Util.ajaxPost("php/request.php", {
                     endpoints: endpoints, params: this.params});
-            } catch(e) {
-                console.log(e);
-            }
+            } catch(e) {}
 
             if (!ajax) {
                 return [EVENT_AJAX_ERROR];
@@ -387,9 +380,8 @@
                 }
                 let harvest;
                 try {
-                    harvest = this.__harvestData(current, ajax.data[current]);
+                    harvest = this._harvestData(current, ajax.data[current]);
                 } catch(e) {
-                    console.log(e, harvest);
                     events.push(EVENT_HARVEST_INCOMPLETE);
                     continue;
                 }
@@ -406,11 +398,11 @@
                     this.expiries[current] = expiry < 0 ? -1 : Date.now() + expiry;
                 }
             }
-            this.__cache();
+            this._cache();
             return events;
         }
 
-        __harvestData(endpoint, result) {
+        _harvestData(endpoint, result) {
             const data = {hadErrors: false};
             let r;
             switch (endpoint) {
@@ -423,7 +415,6 @@
                     apply(data, "ozone", () => r.OZONE);
                     apply(data, "aqi", () => r.AQI);
                     apply(data, "category", () => r.aqiInfo.category);
-                    console.log(data);
                     return data;
 
                 case "arcgisgeometry":
@@ -601,7 +592,7 @@
                             data.languages[i] = innerData;
                         });
                     }
-                    data.flagUrl = r.flag || "-";
+                    apply(data, "flagUrl", () => r.flag);
                     data.regionalBlocs = [];
                     if (r.regionalBlocs.length) {
                         r.regionalBlocs.forEach((item, i) => {
@@ -683,7 +674,7 @@
             }
         }
 
-        __reassignParams() {
+        _reassignParams() {
             const d = this.data;
             const global = dataArray["GLOBAL"].data.countries[this.id];
             this.params.isoA2 = this.id;
@@ -700,14 +691,14 @@
             }
         }
 
-        __requiresUpdate(endpoint) {
+        _requiresUpdate(endpoint) {
             return COUNTRY_ENDPOINTS.some(i => i === endpoint)
                 && (!this.expiries[endpoint] ||
                     (this.expiries[endpoint] !== -1
                     && this.expiries[endpoint] < Date.now() + EXPIRY_BUFFER));
         }
 
-        __cache() {
+        _cache() {
             localStorage.setObject(this.id, this);
         }
     }

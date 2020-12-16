@@ -130,6 +130,9 @@ $(window).on("load", async () => {
             case "mainButton":
                 menu = "#mainMenu";
                 break;
+            case "searchButton":
+                menu = "#searchMenu";
+                break;
             default:
                 throw new Error("Button should not exist.")
         }
@@ -157,40 +160,41 @@ $(window).on("load", async () => {
     $("#markerMenu .btn").on("click", function() {
         setMarker($(this));
     });
+    
+    await setupSearch();
 
-    $("#search").on("input focus", () => {
-        if ($("#searchMenu").is(":hidden")) {
-            closeOpenMenus();
-            $("#searchMenu").slideDown(100);
-        }
-        const value = $("#search").val().toUpperCase();
-        const suggestions = [];
-        globalData.requestData([], (data, event) => {
-            for (let i = 0; i < Object.keys(data.countries).length; i++) {
-                if (value !== "" && suggestions.length > 19) break;
-                const country = data.countries[Object.keys(data.countries)[i]];
-                if (country.cca2.includes(value) || country.cca3.includes(value) || country.name.toUpperCase().includes(value)) {
-                    suggestions.push(country.cca2 + "/" + country.cca3 + " - " + country.name);
-                }
-            }
-        });
-        let htmlString = "<ul>";
-        for (let i = 0; i < suggestions.length; i++) {
-            htmlString += `
-            <li>
-                <button class="btn tLabel" data-group="searchResults" data-type="single" data-ref="`+suggestions[i].substr(0, 2)+`" role="menuitemradio" tabindex="0">`+suggestions[i]+`</button>
-            </li>
-            `;
-        }
-        htmlString += "</ul>";
-        $("#searchMenu").html(htmlString);
-        $("#searchMenu .btn").on("click", function() {
-            closeOpenMenus();
-            setCountry($(this).data("ref"));
-        });
-        console.log(suggestions);
+    $("#searchMenu .btn").on("click", function() {
+        closeOpenMenus();
+        setCountry($(this).data("ref"));
     });
 });
+
+const setupSearch = async () => {
+    let htmlString = `
+    <ul>
+        <h2 class="semantic">Search Menu</h2>
+        <h3 class="menuHeader tHeading5">Countries</h3>
+    `;
+    const countries = [];
+    await globalData.requestData([], (data, event) => {
+        const keys = Object.keys(data.countries);
+        for (let i = 0; i < keys.length; i++) {
+            const country = data.countries[keys[i]];
+            countries.push({ name: country.name, isoA2: keys[i] });
+        }
+    });
+    countries.sort((p, q) => p.name > q.name);
+    for (let i = 0; i < countries.length; i++) {
+        const country = countries[i];
+        htmlString += `
+        <li>
+            <button class="btn tLabel" data-group="searchResults" data-type="single" data-ref="`+country.isoA2+`" role="menuitemradio" tabindex="0">`+country.name+`</button>
+        </li>
+        `;
+    }
+    htmlString += "</ul>";
+    $("#searchMenu").html(htmlString);
+}
 
 const closeOpenMenus = () => {
     let element;
@@ -218,14 +222,16 @@ const hideLoader = () => {
 
 const locateAndSetCountry = async (lat = 52, lng = 0) => {
     Sections.loadHeaderPanel();
-    countryData = await Data.getCountry("", lat, lng);
+    const country = await Data.getCountry("", lat, lng);
+    if (country) countryData = country;
     await setCountry(countryData.id);
 }
 
 const setCountry = async isoA2 => {
-    $("#search").val("");
-    countryData = await Data.getCountry(isoA2);
-    await globalData.requestData(["reliefwebglobal"], (data, event) => {
+    Sections.loadHeaderPanel();
+    const country = await Data.getCountry(isoA2);
+    if (country) countryData = country;
+    await globalData.requestData([], (data, event) => {
         let layer = getBorderLayer(isoA2);
         if (!layer && data.borders) {
             borderLayer.addData(data.borders[isoA2]);

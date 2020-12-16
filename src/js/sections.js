@@ -236,7 +236,6 @@
     
         validateAndUpdate(endpoint = "", data = {}, type = "", stamp = 0, success = true) {
             if (stamp !== this.stamp && this.stamp !== -1){
-                console.log("INVALID/SIMULTANEOUS REQUEST");
                 return;
             }
             if (type === "global") {
@@ -272,7 +271,6 @@
                         country: this.countryData
                     });
                 } catch(e) {
-                    console.log(e);
                     success = false;
                     this.emptyFunction();
                 }
@@ -302,7 +300,7 @@
 
     const emptyHeaderPanel = () => {
         $("#flag").attr("src", "");
-        $("#country").html("Select a country");
+        $("#country").html("No country found");
     }
 
     const setCovidLPanel = (data = {global: {}, country: {}}) => {
