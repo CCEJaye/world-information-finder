@@ -412,6 +412,16 @@ const updateMarkers = async (ref = "") => {
     flyTo(layer.getBounds(), true);
 }
 
+const findCountryWhere = (list = {}, field = "", value = "") => {
+    const keys = Object.keys(list);
+    for (let i = 0; i < keys.length; i++) {
+        const item = list[keys[i]];
+        if (item[field] === value) {
+            return item;
+        }
+    }
+}
+
 const updateDisasterMarkers = async () => {
     await globalData.requestData(["reliefwebglobal"], async (data, event) => {
         const countries = data.countries;
@@ -421,7 +431,7 @@ const updateDisasterMarkers = async () => {
         const positions = [];
         for (let i = 0; i < d.length; i++) {
             const cur = d[i];
-            let latlng = countries[cur.isoA3].latlng;
+            let latlng = findCountryWhere(countries, "cca3", cur.isoA3).latlng;
             if (positions.some(i => i[0] === latlng[0] && i[1] === latlng[1])) {
                 let newLatlng = [latlng[0], latlng[1]];
                 let cont = true;
